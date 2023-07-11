@@ -37,7 +37,7 @@ class SCALayer(torch.nn.Module):
         in_channels_1,
         in_channels_2,
         out_channels,
-        att = False,
+        att=False,
     ):
         super().__init__()
         self.in_channels_1 = in_channels_1
@@ -61,7 +61,7 @@ class SCALayer(torch.nn.Module):
         )
         self.aggr2 = Aggregation(
             aggr_func="sum",
-            update_func = "sigmoid",
+            update_func="sigmoid",
         )
         self.aggr3 = Aggregation(
             aggr_func="mean",
@@ -75,7 +75,7 @@ class SCALayer(torch.nn.Module):
 
     def weight_func(self, x):
         r"""Weight function for intra aggregation layer according to [HZPMC22]_."""
-        return 1/(1+torch.exp(-x))
+        return 1 / (1 + torch.exp(-x))
 
     def forward(self, x_1, x_2, neighborhood_1, neighborhood_2):
         r"""Forward pass.
@@ -133,7 +133,7 @@ class SCALayer(torch.nn.Module):
             Neighborhood matrix mapping input 2 to output.
 
         Returns
-        ------- 
+        -------
         _: torch.Tensor, shape=[n_mchains, channels]
             Output features on output chains. (nodes: 0-chain, edges: 1-chain,...).
         """
@@ -143,14 +143,14 @@ class SCALayer(torch.nn.Module):
         x_1_weight = self.aggr1(x_1_list)
         x_1_weight = torch.matmul(torch.relu(x_1_weight), x_1.transpose(1, 0))
         x_1_weight = self.weight_func(x_1_weight)
-        x_1 = x_1_weight.transpose(1, 0)*x_1
+        x_1 = x_1_weight.transpose(1, 0) * x_1
 
         x_2 = self.conv2(x_2, neighborhood_2, x_1)
         x_2_list = list(torch.split(x_2, 1, dim=0))
         x_2_weight = self.aggr2(x_2_list)
         x_2_weight = torch.matmul(torch.relu(x_2_weight), x_2.transpose(1, 0))
         x_2_weight = self.weight_func(x_2_weight)
-        x_2 = x_2_weight.transpose(1, 0)*x_2
+        x_2 = x_2_weight.transpose(1, 0) * x_2
 
         xf = self.aggr3([x_1, x_2])
 
