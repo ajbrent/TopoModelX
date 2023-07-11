@@ -22,10 +22,14 @@ class SCALayer(torch.nn.Module):
 
     Parameters
     ----------
-    in_channels : int
-        Dimension of input cell features.
-    out_channels: int
+    in_channels_1 : int
+        Dimension of first input cell features.
+    in_channels_2 : int
+        Dimension of second input cell features.
+    out_channels : int
         Dimension of output cell features.
+    att : bool
+        Whether attention is used or not.
     """
 
     def __init__(
@@ -141,7 +145,7 @@ class SCALayer(torch.nn.Module):
         x_1_weight = self.weight_func(x_1_weight)
         x_1 = x_1_weight.transpose(1, 0)*x_1
 
-        x_2 = self.conv2(x_2, neighborhood_2)
+        x_2 = self.conv2(x_2, neighborhood_2, x_1)
         x_2_list = list(torch.split(x_2, 1, dim=0))
         x_2_weight = self.aggr2(x_2_list)
         x_2_weight = torch.matmul(torch.relu(x_2_weight), x_2.transpose(1, 0))
